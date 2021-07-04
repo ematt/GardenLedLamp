@@ -100,8 +100,6 @@ void led_render() {
 }
 
 void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *htim) {
-
-    HAL_GPIO_TogglePin(DEBUG3_GPIO_Port, DEBUG3_Pin);
   // DMA buffer set from LED(wr_buf_p) to LED(wr_buf_p + 1)
   if(wr_buf_p < NUM_PIXELS) {
     // We're in. Fill the even buffer
@@ -127,12 +125,10 @@ void HAL_TIM_PWM_PulseFinishedHalfCpltCallback(TIM_HandleTypeDef *htim) {
     for(uint8_t i = 0; i < WR_BUF_LEN / 2; ++i) wr_buf[i] = 0;
     wr_buf_p++;
   }
-  HAL_GPIO_TogglePin(DEBUG3_GPIO_Port, DEBUG3_Pin);
 }
 
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
   // DMA buffer set from LED(wr_buf_p) to LED(wr_buf_p + 1)
-    HAL_GPIO_TogglePin(DEBUG3_GPIO_Port, DEBUG3_Pin);
   if(wr_buf_p < NUM_PIXELS) {
     // We're in. Fill the odd buffer
 #if (NUM_BPP == 4) // SK6812
@@ -160,5 +156,4 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
     HAL_TIM_PWM_Stop_DMA(&htim2, TIM_CHANNEL_2);
     _transferOnGoing = false;
   }
-  HAL_GPIO_TogglePin(DEBUG3_GPIO_Port, DEBUG3_Pin);
 }

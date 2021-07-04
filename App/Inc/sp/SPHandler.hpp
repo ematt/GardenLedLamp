@@ -60,9 +60,9 @@ public:
 
 	constexpr inline static uint16_t CMD_UPDATE_LED_COLOR = 0x1000;
 	constexpr inline static uint16_t CMD_UPDATE_LED_PIXELS = 0x1001;
+	constexpr inline static uint16_t CMD_UPDATE_LED_PIXELS_WO_ACK = 0x1002;
 
 	constexpr inline static uint16_t CMD_PING = 0xA000;
-
 };
 
 

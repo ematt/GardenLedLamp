@@ -143,7 +143,7 @@ void BUS_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         _dataWriteAddressUART = lwrb_get_linear_block_write_address(&_fifoInstance);
         if(HAL_UART_Receive_DMA(_uart_handler, _dataWriteAddressUART, _lengthToWriteUART) != HAL_OK)
         {
-        	__BKPT(0);
+            assert_param(0);
         }
     }
     else

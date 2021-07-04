@@ -205,6 +205,7 @@ public:
 			decltype(_dest)>::max();
 	static constexpr inline decltype(_dest) BROADCAST_ADDR = std::numeric_limits<
 			decltype(_dest)>::max()-1;
+	static constexpr inline decltype(_dest) MASTER_ADDR = 0x00;
 };
 
 class SPMessageDecoder {

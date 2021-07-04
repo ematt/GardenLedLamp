@@ -88,6 +88,10 @@ int SPHandler::Process(SPMessageDecoder &request, SPMessageEncoder &reply)
 		return -EINVAL;
 	}
 
+	reply.GetMessage().SetDest(SPMessage::MASTER_ADDR);
+	reply.GetMessage().SetCommand(request.GetMessage().GetCommand());
+	reply.GetMessage().SetHandler(request.GetMessage().GetHandler());
+
 	SPHandler::PrintMessage("Request", request.GetMessage());
 	int ret = -ENOTSUP;
 
@@ -118,6 +122,11 @@ int SPHandler::Process(SPMessageDecoder &request, SPMessageEncoder &reply)
 		ret = HandlerUpdateLedPixels(request, reply);
 		break;
 
+	case CMD_UPDATE_LED_PIXELS_WO_ACK:
+		ret = HandlerUpdateLedPixels(request, reply);
+		ret = ENODATA;
+		break;
+
 	case CMD_PING:
 		ret = HandlerPing(request, reply);
 		break;
@@ -141,7 +150,12 @@ int SPHandler::Process(SPMessageDecoder &request, SPMessageEncoder &reply)
 		}
 	}
 
-	return ESUCCESS;
+	if(dest == SPMessage::BROADCAST_ADDR)
+	{
+		return ENODATA;
+	}
+
+	return ret;
 }
 
 int SPHandler::HandlerSetPower(SPMessageDecoder &request,

@@ -12,6 +12,7 @@ import pdb
 from random import randrange
 from colormath.color_objects import sRGBColor, HSVColor
 from colormath.color_conversions import convert_color
+import datetime
 
 import time
 import collections
@@ -154,6 +155,7 @@ class SPMessage:
 
         UPDATE_LED_COLOR = 0x1000
         UPDATE_LED_PIXELS = UPDATE_LED_COLOR + 1
+        UPDATE_LED_PIXELS_WO_ACK = UPDATE_LED_PIXELS + 1
 
         PING = 0xA000
 
@@ -343,6 +345,22 @@ class BasicApp(cmd2.Cmd):
             pdb.set_trace()
 
         return reply
+    
+    @staticmethod
+    def current_milli_time():
+        return round(time.time() * 1000)
+
+    @staticmethod
+    def sleepIfNeeded(timestamp):
+        delayBetweenRequests = 41.666
+        delayNow = BasicApp.current_milli_time()
+        delDiff = delayNow - timestamp
+        if(delDiff <= delayBetweenRequests):
+            #self.poutput("Sleep for {}. Was {}, now is {}".format(0.001 *  (delayBetweenRequests - delDiff), devices[i]["timestampLastMsg"], delayNow))
+            time.sleep(0.001 * (delayBetweenRequests - delDiff))
+            #self.poutput("wake up at {}".format(BasicApp.current_milli_time()))
+
+        return BasicApp.current_milli_time()
 
     @cmd2.with_category(PC)
     def do_serial(self, arg):
@@ -547,7 +565,8 @@ class BasicApp(cmd2.Cmd):
                         "transition": True,
                         "animationIndex": 0,
                         "frame": 0,
-                        "fps": FPS()
+                        "fps": FPS(),
+                        "timestampLastMsg": 0
                     })
         else:
             devices.append({
@@ -556,7 +575,8 @@ class BasicApp(cmd2.Cmd):
                     "transition": True,
                     "animationIndex": 0,
                     "frame": 0,
-                    "fps": FPS()
+                    "fps": FPS(),
+                    "timestampLastMsg": 0
                 })
 
         animations = [
@@ -627,10 +647,11 @@ class BasicApp(cmd2.Cmd):
 
                 msgData = struct.pack(">B{}B".format(len(pixelData)), len(pixels), *pixelData)
 
-                msg = SPMessageBuilder.buildSp(device, SPMessage.COMMAND.UPDATE_LED_PIXELS, msgData)
-                reply = self.sendMsgAndWaitReply(msg)
-                #self.poutput(reply)
+                msg = SPMessageBuilder.buildSp(device, SPMessage.COMMAND.UPDATE_LED_PIXELS_WO_ACK, msgData) 
+                #reply = self.sendMsgAndWaitReply(msg)
+                reply = self.sendMsg(msg)
 
+                devices[i]["timestampLastMsg"] = BasicApp.sleepIfNeeded(devices[i]["timestampLastMsg"])
                 self.poutput("Device {}: {} fps".format(devices[i]["id"], devices[i]["fps"]()))
 
             #if devices[i]["transition"]:
