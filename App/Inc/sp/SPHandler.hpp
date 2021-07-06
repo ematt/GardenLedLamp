@@ -42,6 +42,15 @@ private:
 	static int HandlerGetLuminosity(SPMessageDecoder &request, SPMessageEncoder &reply);
 
 	static int HandlerGetStripLen(SPMessageDecoder &request, SPMessageEncoder &reply);
+	static int HandlerGetModel(SPMessageDecoder &request, SPMessageEncoder &reply);
+	static int HandlerGetUUID(SPMessageDecoder &request, SPMessageEncoder &reply);
+	static int HandlerGetVersion(SPMessageDecoder &request, SPMessageEncoder &reply);
+
+	static int HandlerSetColorCorrection(SPMessageDecoder &request, SPMessageEncoder &reply);
+	static int HandlerGetColorCorrection(SPMessageDecoder &request, SPMessageEncoder &reply);
+
+	static int HandlerSetColorTemperature(SPMessageDecoder &request, SPMessageEncoder &reply);
+	static int HandlerGetColorTemperature(SPMessageDecoder &request, SPMessageEncoder &reply);
 
 	static int HandlerUpdateLedColor(SPMessageDecoder &request, SPMessageEncoder &reply);
 	static int HandlerUpdateLedPixels(SPMessageDecoder &request, SPMessageEncoder &reply);
@@ -51,12 +60,28 @@ public:
 	inline static uint16_t DEVICE_ADDRESS = SPMessage::INVALID_DEST;
 
 	constexpr inline static uint16_t CMD_SET_POWER = 0x01;
-	constexpr inline static uint16_t CMD_GET_POWER = CMD_SET_POWER | 0x0100;//SetRequest(CMD_SET_POWER);
-	constexpr inline static uint16_t CMD_SET_LUMINOSITY = 0x03;
-	constexpr inline static uint16_t CMD_GET_LUMINOSITY = CMD_SET_LUMINOSITY | 0x0100;//SetRequest(CMD_SET_POWER);
+	constexpr inline static uint16_t CMD_GET_POWER = CMD_SET_POWER | 0x0100;
 
-	constexpr inline static uint16_t CMD_SET_STRIP_LEN = 0x02;
-	constexpr inline static uint16_t CMD_GET_STRIP_LEN = CMD_SET_STRIP_LEN | 0x0100;//SetRequest(CMD_SET_POWER);
+	constexpr inline static uint16_t CMD_SET_STRIP_LEN = 0x02; // Not used
+	constexpr inline static uint16_t CMD_GET_STRIP_LEN = CMD_SET_STRIP_LEN | 0x0100;
+
+	constexpr inline static uint16_t CMD_SET_LUMINOSITY = 0x03;
+	constexpr inline static uint16_t CMD_GET_LUMINOSITY = CMD_SET_LUMINOSITY | 0x0100;
+
+	constexpr inline static uint16_t CMD_SET_MODEL = 0x04; // Not used
+	constexpr inline static uint16_t CMD_GET_MODEL = CMD_SET_MODEL | 0x0100;
+
+	constexpr inline static uint16_t CMD_SET_UUID = 0x05; // Not used
+	constexpr inline static uint16_t CMD_GET_UUID = CMD_SET_UUID | 0x0100;
+
+	constexpr inline static uint16_t CMD_SET_COLOR_CORRECTION = 0x06;
+	constexpr inline static uint16_t CMD_GET_COLOR_CORRECTION = CMD_SET_COLOR_CORRECTION | 0x0100;
+
+	constexpr inline static uint16_t CMD_SET_COLOR_TEMPERATURE = 0x07;
+	constexpr inline static uint16_t CMD_GET_COLOR_TEMPERATURE = CMD_SET_COLOR_TEMPERATURE | 0x0100;
+
+	constexpr inline static uint16_t CMD_SET_VERSION = 0x08; // Not used
+	constexpr inline static uint16_t CMD_GET_VERSION = CMD_SET_VERSION | 0x0100;
 
 	constexpr inline static uint16_t CMD_UPDATE_LED_COLOR = 0x1000;
 	constexpr inline static uint16_t CMD_UPDATE_LED_PIXELS = 0x1001;

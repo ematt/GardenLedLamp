@@ -38,9 +38,9 @@ void led_set_RGB(uint8_t index, uint8_t r, uint8_t g, uint8_t b) {
   rgb_arr[4 * index + 2] = scale8(b, 0xF0); // b;
   rgb_arr[4 * index + 3] = 0;
 #else // WS2812B
-  rgb_arr[3 * index] = scale8(g, 0xB0); // g;
+  rgb_arr[3 * index] = g;//scale8(g, 0xB0); // g;
   rgb_arr[3 * index + 1] = r;
-  rgb_arr[3 * index + 2] = scale8(b, 0xF0); // b;
+  rgb_arr[3 * index + 2] = b;//scale8(b, 0xF0); // b;
 #endif // End SK6812 WS2812B case differentiation
 }
 

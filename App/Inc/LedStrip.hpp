@@ -45,8 +45,30 @@ public:
 	}
 	constexpr void SetLuminosity(uint8_t value)
 	{
-		_luminosity = value*100.f/255.f;
+		_luminosity = value;
 		_shouldUpdate = true;
+	}
+
+	constexpr void SetColorCorrection(ColorRGB cc)
+	{
+		_colorCorrection = cc;
+		_shouldUpdate = true;
+	}
+
+	constexpr ColorRGB GetColorCorrection() const
+	{
+		return _colorCorrection;
+	}
+
+	constexpr void SetColorTemperature(ColorRGB ct)
+	{
+		_colorTemperature = ct;
+		_shouldUpdate = true;
+	}
+
+	constexpr ColorRGB GetColorTemperature() const
+	{
+		return _colorTemperature;
 	}
 
 	void SetColor(uint8_t r, uint8_t g, uint8_t b)
@@ -73,35 +95,26 @@ public:
 		_shouldUpdate = true;
 	}
 
+	static inline uint8_t scale8(uint8_t x, uint8_t scale) {
+	  return ((uint16_t)x * scale) >> 8;
+	}
+
 	int Update()
 	{
 		if (is_transfer_ongoing())
 			return -EBUSY;
 
-		if (!_isActive)
+		if (!_isActive || gamma_lut[_luminosity] == 0x00)
 		{
 			led_set_all_RGB(0x00, 0x00, 0x00);
 		}
 		else
 		{
-			if (_luminosity != 100)
+			for (auto i = 0; i < GetLength(); i++)
 			{
-				for (auto i = 0; i < GetLength(); i++)
-				{
-					ColorHSV hsv = leds[i];
-					hsv.v = hsv.v*(_luminosity/100.f);
-					ColorRGB rgb = hsv;
-					led_set_RGB(i, gamma_lut[rgb.r], gamma_lut[rgb.g],
-							gamma_lut[rgb.b]);
-				}
-			}
-			else
-			{
-				for (auto i = 0; i < GetLength(); i++)
-				{
-					led_set_RGB(i, gamma_lut[leds[i].r], gamma_lut[leds[i].g],
-							gamma_lut[leds[i].b]);
-				}
+				const ColorRGB pixel = leds[i];
+				ColorRGB c = computeAdjustment(gamma_lut[_luminosity], _colorCorrection, _colorTemperature);
+				led_set_RGB(i, scale8(pixel.red, c.red), scale8(pixel.green, c.green), scale8(pixel.blue, c.blue));
 			}
 		}
 
@@ -118,7 +131,9 @@ public:
 
 private:
 	bool _isActive = true;
-	uint8_t _luminosity = 100;
+	uint8_t _luminosity = 0xFF;
+	ColorRGB _colorCorrection = TypicalPixelString;
+	ColorRGB _colorTemperature = UncorrectedTemperature;
 	bool _shouldUpdate = false;
 	ColorRGB leds[MAX_LED_STRIP_LEN];
 
@@ -141,6 +156,26 @@ private:
 			185, 186, 188, 190, 192, 193, 195, 197, 199, 200, 202, 204, 206,
 			207, 209, 211, 213, 215, 217, 218, 220, 222, 224, 226, 228, 230,
 			232, 233, 235, 237, 239, 241, 243, 245, 247, 249, 251, 253, 255, };
+
+	// https://github.com/FastLED/FastLED/blob/b5874b588ade1d2639925e4e9719fa7d3c9d9e94/src/controller.h#L150
+    static ColorRGB computeAdjustment(uint8_t scale, const ColorRGB & colorCorrection, const ColorRGB & colorTemperature) {
+    	ColorRGB adj;
+
+		if(scale > 0) {
+		  for(uint8_t i = 0; i < 3; ++i) {
+			  uint8_t cc = colorCorrection.raw[i];
+			  uint8_t ct = colorTemperature.raw[i];
+			  if(cc > 0 && ct > 0) {
+				  uint32_t work = (((uint32_t)cc)+1) * (((uint32_t)ct)+1) * scale;
+				  work /= 0x10000L;
+				  adj.raw[i] = work & 0xFF;
+			  }
+		  }
+		}
+
+		return adj;
+    }
+
 };
 
 extern LedStrip LedStripInstance;

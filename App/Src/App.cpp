@@ -14,6 +14,7 @@
 #include "DgbLog.hpp"
 #include "Bus/bus_uart.h"
 #include "sp/SPHandler.hpp"
+#include "About.hpp"
 
 #include "nanocobs/cobs.h"
 
@@ -24,7 +25,7 @@ constexpr DgbLog Logger("App");
 
 void hexdump(const uint8_t *buffer, unsigned int size, unsigned int width);
 
-void App_SP()
+void Process_SP()
 {
 	while (true)
 	{
@@ -106,6 +107,8 @@ void App_SP()
 void App()
 {
 	LOG_INF("App started");
+	LOG_INF("Version: " VERSION_STRING);
+	LOG_INF("Model: " DEVICE_MODEL);
 
 	BUS_UART_Init();
 	SPHandler::Init();
@@ -113,12 +116,11 @@ void App()
 	LOG_INF("Device Address: %d", SPHandler::GetBusAddress());
 
 	LedStripInstance.SetColor(0x00, 0x00, 0x00);
-	LedStripInstance.SetColor(0x00, 0xFF, 0xFF, 0xFF);
+	LedStripInstance.SetColor(0x00, 0x00, 0x0F, 0x00);
 
 	while (1)
 	{
-
-		App_SP();
+		Process_SP();
 
 		if (LedStripInstance.ShouldUpdate())
 		{
@@ -131,6 +133,5 @@ void App()
 			LOG_INF("LEDs updated");
 		}
 	}
-
 }
 

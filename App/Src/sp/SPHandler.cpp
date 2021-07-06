@@ -10,6 +10,7 @@
 #include "sp/SPHandler.hpp"
 #include "DgbLog.hpp"
 #include "main.h"
+#include "About.hpp"
 
 #include "LedStrip.hpp"
 
@@ -71,8 +72,9 @@ void SPHandler::PrintMessage(const std::string_view &label,
 		const SPMessage &msg)
 {
 	printf("\r\n%s\r\n", label.data());
-	printf("Dest: %d, Cmd: %d, Handler: %d Len: %d, Status: %d\r\n", msg.GetDest(),
-			msg.GetCommand(), msg.GetHandler(), msg.GetLen(), (int) msg.GetStatus());
+	printf("Dest: %d, Cmd: %d, Handler: %d Len: %d, Status: %d\r\n",
+			msg.GetDest(), msg.GetCommand(), msg.GetHandler(), msg.GetLen(),
+			(int) msg.GetStatus());
 
 	hexdump(msg.GetDataLocation(), msg.GetLen(), 16);
 
@@ -114,6 +116,32 @@ int SPHandler::Process(SPMessageDecoder &request, SPMessageEncoder &reply)
 		ret = HandlerGetStripLen(request, reply);
 		break;
 
+	case CMD_GET_MODEL:
+		ret = HandlerGetModel(request, reply);
+		break;
+
+	case CMD_GET_UUID:
+		ret = HandlerGetUUID(request, reply);
+		break;
+
+	case CMD_GET_COLOR_CORRECTION:
+		ret = HandlerGetColorCorrection(request, reply);
+		break;
+	case CMD_SET_COLOR_CORRECTION:
+		ret = HandlerSetColorCorrection(request, reply);
+		break;
+
+	case CMD_GET_COLOR_TEMPERATURE:
+		ret = HandlerGetColorTemperature(request, reply);
+		break;
+	case CMD_SET_COLOR_TEMPERATURE:
+		ret = HandlerSetColorTemperature(request, reply);
+		break;
+
+	case CMD_GET_VERSION:
+		ret = HandlerGetVersion(request, reply);
+		break;
+
 	case CMD_UPDATE_LED_COLOR:
 		ret = HandlerUpdateLedColor(request, reply);
 		break;
@@ -140,7 +168,7 @@ int SPHandler::Process(SPMessageDecoder &request, SPMessageEncoder &reply)
 	{
 		reply.Close();
 
-		if(dest == SPMessage::BROADCAST_ADDR)
+		if (dest == SPMessage::BROADCAST_ADDR)
 		{
 			LOG_INF("No reply for broadcast request");
 		}
@@ -150,7 +178,7 @@ int SPHandler::Process(SPMessageDecoder &request, SPMessageEncoder &reply)
 		}
 	}
 
-	if(dest == SPMessage::BROADCAST_ADDR)
+	if (dest == SPMessage::BROADCAST_ADDR)
 	{
 		return ENODATA;
 	}
@@ -231,6 +259,88 @@ int SPHandler::HandlerGetStripLen(SPMessageDecoder &request,
 	return ESUCCESS;
 }
 
+int SPHandler::HandlerGetModel(SPMessageDecoder &request,
+		SPMessageEncoder &reply)
+{
+	reply.write(reinterpret_cast<const uint8_t*>(DEVICE_MODEL),
+			strlen(DEVICE_MODEL));
+
+	return ESUCCESS;
+}
+
+int SPHandler::HandlerGetUUID(SPMessageDecoder &request,
+		SPMessageEncoder &reply)
+{
+	uint8_t uuid[128];
+	int uuid_len = ReadUUID(uuid, sizeof(uuid));
+	RETURN_ON_ERROR(uuid_len, ReadUUID);
+
+	reply.write(uuid, uuid_len);
+
+	return ESUCCESS;
+}
+
+int SPHandler::HandlerSetColorCorrection(SPMessageDecoder &request,
+		SPMessageEncoder &reply)
+{
+	int ret;
+	uint32_t cc;
+
+	ret = request.decode(&cc);
+	RETURN_ON_ERROR(ret, decode);
+
+	LedStripInstance.SetColorCorrection(cc);
+
+	return ESUCCESS;
+}
+
+int SPHandler::HandlerGetColorCorrection(SPMessageDecoder &request,
+		SPMessageEncoder &reply)
+{
+	int ret;
+
+	uint32_t cc = LedStripInstance.GetColorCorrection();
+	ret = reply.encode<uint32_t>(&cc);
+	RETURN_ON_ERROR(ret, encode);
+
+	return ESUCCESS;
+}
+
+int SPHandler::HandlerSetColorTemperature(SPMessageDecoder &request,
+		SPMessageEncoder &reply)
+{
+	int ret;
+	uint32_t ct;
+
+	ret = request.decode(&ct);
+	RETURN_ON_ERROR(ret, decode);
+
+	LedStripInstance.SetColorTemperature(ct);
+
+	return ESUCCESS;
+}
+
+int SPHandler::HandlerGetColorTemperature(SPMessageDecoder &request,
+		SPMessageEncoder &reply)
+{
+	int ret;
+
+	uint32_t ct = LedStripInstance.GetColorTemperature();
+	ret = reply.encode<uint32_t>(&ct);
+	RETURN_ON_ERROR(ret, encode);
+
+	return ESUCCESS;
+}
+
+int SPHandler::HandlerGetVersion(SPMessageDecoder &request,
+		SPMessageEncoder &reply)
+{
+	reply.write(reinterpret_cast<const uint8_t*>(VERSION_STRING),
+			sizeof(VERSION_STRING));
+
+	return ESUCCESS;
+}
+
 int SPHandler::HandlerUpdateLedColor(SPMessageDecoder &request,
 		SPMessageEncoder &reply)
 {
@@ -302,7 +412,7 @@ int SPHandler::HandlerPing(SPMessageDecoder &request, SPMessageEncoder &reply)
 {
 	LOG_INF("Ping received from %d", request.GetMessage().GetDest());
 
-	if(request.GetMessage().GetDest() == SPMessage::BROADCAST_ADDR)
+	if (request.GetMessage().GetDest() == SPMessage::BROADCAST_ADDR)
 	{
 		LOG_WRN("Broadcast ping");
 	}
@@ -319,6 +429,7 @@ uint8_t SPHandler::ReadBusAddress()
 	uint8_t pin4State = !(HAL_GPIO_ReadPin(BUS_ADDR3_GPIO_Port, BUS_ADDR3_Pin));
 
 	// Create a 4bit value out of the read pins
-	uint8_t addr = (pin4State << 3) + (pin3State << 2) + (pin2State << 1) + pin1State;
+	uint8_t addr = (pin4State << 3) + (pin3State << 2) + (pin2State << 1)
+			+ pin1State;
 	return addr;
 }
