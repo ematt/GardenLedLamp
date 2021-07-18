@@ -6,6 +6,17 @@ WS2812 led strip controller based on [STM32L432KC](https://www.st.com/en/microco
 
 Import the project in STM32CubeIDE.
 
+## Stuff needed
+
+1. [Nucleo-32 STM32L432](https://www.st.com/en/evaluation-tools/nucleo-l432kc.html) 
+2. [RS385 to TTL transciever](https://www.elecrow.com/uart-ttl-to-rs485-twoway-converter-p-1545.html)
+3. 2x[Perfboard Plates ](https://www.adafruit.com/product/2670)
+4. 5V step down regulator
+5. 3v3 step down regulator
+6. [74LV1T125](https://www.nexperia.com/products/analog-logic-ics/asynchronous-interface-logic/voltage-translators-level-shifters/series/74LV1T125.html)
+7. PCB adapter SOP8, SSOP8 and TSSOP8
+8. WS2812 led strip powered at 5V
+
 ## Schematic
 ```
 
