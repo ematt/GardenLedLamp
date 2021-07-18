@@ -159,7 +159,7 @@ private:
 
 	// https://github.com/FastLED/FastLED/blob/b5874b588ade1d2639925e4e9719fa7d3c9d9e94/src/controller.h#L150
     static ColorRGB computeAdjustment(uint8_t scale, const ColorRGB & colorCorrection, const ColorRGB & colorTemperature) {
-    	ColorRGB adj;
+    	ColorRGB adj = 0;
 
 		if(scale > 0) {
 		  for(uint8_t i = 0; i < 3; ++i) {
