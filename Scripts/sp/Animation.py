@@ -191,7 +191,7 @@ class AnimationRunner:
         self.context = context
         self.devices = []
         self.worker = Thread(target=self.worker)
-        self._isRunning = Event()
+        self.shouldStop = Event()
 
         pixelCount = 3+4+4+4+3
 
@@ -212,15 +212,15 @@ class AnimationRunner:
                 *animationList[device["animationIndex"] % len(animationList)][1])
 
     def start(self):
-        self._isRunning.clear()
+        self.shouldStop.clear()
         self.worker.start()
 
     def stop(self):
-        self._isRunning.set()
+        self.shouldStop.set()
         self.worker.join()
 
     def isRunning(self):
-        return self._isRunning.is_set() == False
+        return self.shouldStop.is_set() == False
 
 
     def sleepIfNeeded(self, context: AnimationContext, timestamp):
@@ -247,7 +247,7 @@ class AnimationRunner:
         while True:
             for i in range(0, len(self.devices)):
 
-                if self._isRunning.is_set():
+                if self.shouldStop.is_set():
                     return
 
                 device = self.devices[i]["device"]

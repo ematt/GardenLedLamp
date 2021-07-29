@@ -1,9 +1,10 @@
 import struct
 import argparse
+import signal
+import sys
 import logging
 from tkinter.tix import Tree
 from typing import List, Dict, Optional
-
 
 import cmd2
 from cmd2 import (
@@ -400,8 +401,28 @@ class BasicApp(cmd2.Cmd):
 
             self.poutput("Animation started")
 
+from pid import PidFile
+def main():
+    
+    def handle_sigterm(sig, frame):
+        app.poutput("SIGTERM received")
+
+        app.onecmd("quit")
+
+        sys.exit(0)
+
+    signal.signal(signal.SIGTERM, handle_sigterm)
+    import os
+    
+    print("PID: {}".format(os.getpid()))
+
+    with PidFile(pidname = '/tmp/led_sp.pid') as pidLock:
+        print("Lock by {}".format(pidLock.pidname))
+
+        app = BasicApp()
+        app.cmdloop()
+        app.cleanup()
+
 
 if __name__ == '__main__':
-    app = BasicApp()
-    app.cmdloop()
-    app.cleanup()
+    main()

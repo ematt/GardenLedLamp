@@ -119,7 +119,7 @@ class SPMessageBuilder:
 class SPBus:
     def __init__(self, port: TransportLayer) -> None:
         self.port = port
-        self.isRunning = Event()
+        self.shouldStop = Event()
         self.worker = Thread(target=self.worker)
         self.worker.setDaemon(False)
         self.queue = Queue()
@@ -146,20 +146,20 @@ class SPBus:
             except Empty:
                 pass 
 
-            if self.isRunning.is_set():
+            if self.shouldStop.is_set():
                 break
             
 
     def start(self):
-        self.isRunning.clear()
+        self.shouldStop.clear()
         self.worker.start()
 
     def stop(self):
-        if self.isRunning.is_set():
+        if self.shouldStop.is_set():
             return
-            
+
         self.queue.join()
-        self.isRunning.set()
+        self.shouldStop.set()
         self.worker.join()
 
     def setTimeout(self, timeout):
